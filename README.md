@@ -1,25 +1,11 @@
 # AutoClock
 
-A python project that uses the madmom audio and music analysis library to cary out beat detection from a live audio stream and generate a syncronised beat response.
+Fork from https://github.com/louischaman/PyBeatSync
 
-Uses python 2.7
+Updated to python 3.9 (but need numpy 1.19 because madmom is not supported anymore)
 
-install requirements with
+I have modified metronome_basic.py to always compute the BPM in parallel and update the metronome. 
 
-```
-pip install -r requirements.txt
-```
+My goal is to make it works on a raspberry pi with a USB ADC, a serial Midi Board and a 7 segment display in order to add it as a stadalone in in my turntable setup.
 
-run with
-
-```
-python metronome_basic.py
-```
-
-also working on a multi threaded version where the audio stream is running constantly and the metronome adjusts every 10s
-
-to run this 
-
-```
-python metronome_threaded.py
-```
+I may add the key detection later on.
