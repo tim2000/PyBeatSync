@@ -27,7 +27,7 @@ def process_audio(start_time, audio_data):
 
     beat_step3 = m_res2.slope
     beat_step2 = m_res.slope
-    beat_step1 = (np.mean(np.diff(when_beats[len(when_beats)/2:])))
+    beat_step1 = (np.mean(np.diff(when_beats[int(len(when_beats)/2):])))
     beat_step = np.mean(np.diff(when_beats[1:]))
 
 

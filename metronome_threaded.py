@@ -1,20 +1,21 @@
 import pyaudio
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import madmom
 import collections
 import time
-import itertools
+# import itertools
 import midi_tools as mt
-import sys
-import scipy
+# import sys
+# import scipy
 from Metronome import Metronome
 import MetronomeAudio as ma
 import threading
-import Queue
+import queue as Queue
 
-out_ports = mt.user_midi_output(2)
-out_port = out_ports.values()[0]
+
+out_ports = mt.user_midi_output(1)
+out_port = out_ports['MiniFuse 4 MIDI Out 1']
 
 default_chunksize   = 8192
 default_format      = pyaudio.paInt16
@@ -30,7 +31,7 @@ out_port.send(mt.stop)
 
 print("recording")
 stream = audio.open(
-    # input_device_index = 2,
+    input_device_index = 1,
     format=default_format,
     channels=default_channels,
     rate=default_samplerate,
@@ -102,22 +103,22 @@ class Thread_record(threading.Thread):
                 self.data_full.extend(nums)
                 to_process.extend(nums)
 
-        # start_time = time.time()
+        start_time = time.time()
 
-        # for i_chunks_recorded in range(0, int(self.sample_rate / self.chunksize
-        #                         * self.seconds_record)):
-        #     data = stream.read(default_chunksize)
-        #     samples_records = samples_records +  default_chunksize
-        #     start_sample = max(0, samples_records - self.sample_rate * self.max_size)
-        #     nums = np.fromstring(data, np.int16)
-        #     self.data_full.extend(nums)
-        #     to_process.extend(nums)
-        #     if len(to_process) == self.n_samples_process:
-        #         # time when chunk starts
-        #         time_chunk_start = start_time + float(start_sample)/self.sample_rate
-        #         # self.data_to_process.put( (time_chunk_start, np.array(to_process) ) )
-        #         self.data_to_process.put(( start_time - 0.03, np.array(list(self.data_full))))
-        #         to_process = []
+        for i_chunks_recorded in range(0, int(self.sample_rate / self.chunksize
+                                * self.seconds_record)):
+            data = stream.read(default_chunksize)
+            samples_records = samples_records +  default_chunksize
+            start_sample = max(0, samples_records - self.sample_rate * self.max_size)
+            nums = np.fromstring(data, np.int16)
+            self.data_full.extend(nums)
+            to_process.extend(nums)
+            if len(to_process) == self.n_samples_process:
+                # time when chunk starts
+                time_chunk_start = start_time + float(start_sample)/self.sample_rate
+                # self.data_to_process.put( (time_chunk_start, np.array(to_process) ) )
+                self.data_to_process.put(( start_time - 0.03, np.array(list(self.data_full))))
+                to_process = []
 
 
 
@@ -152,10 +153,10 @@ class Thread_metronome(threading.Thread):
             if not self.processed_data.empty():
                 beats, when_beats, beat_step, first_downbeat = self.processed_data.get()
 
-                # print(time.time() - first_downbeat)
-                # beats_full.extend(list(beats))
-                # when_beats = madmom.features.beats.BeatDetectionProcessor(fps=100)(np.array(beats_full))
-                # beat_step = np.mean(np.diff(when_beats))
+                print(time.time() - first_downbeat)
+                beats_full.extend(list(beats))
+                when_beats = madmom.features.beats.BeatDetectionProcessor(fps=100)(np.array(beats_full))
+                beat_step = np.mean(np.diff(when_beats))
                 print("bpm = ", 60/beat_step)
                 metronome = Metronome(first_downbeat, beat_step, out_port)
             else:
@@ -181,33 +182,33 @@ metronome_process.start()
 thread_record.join()
 
 
-# for i in range(0, int(default_samplerate / default_chunksize
-#                         * seconds)):
-#     data = stream.read(default_chunksize)
-#     nums = np.fromstring(data, np.int16)
-#     data_full.extend(nums)
+for i in range(0, int(default_samplerate / default_chunksize
+                        * seconds)):
+    data = stream.read(default_chunksize)
+    nums = np.fromstring(data, np.int16)
+    # data_full.extend(nums)
 
-# stream.stop_stream()
-# stream.close()
+stream.stop_stream()
+stream.close()
 
-# print("finished recording")
+print("finished recording")
 
-# data_full = np.array(data_full)
-# time_process = time.time()
+data_full = np.array(data_full)
+time_process = time.time()
 
-# beats, when_beats, beat_step, first_downbeat = ma.process_audio(start_time, data_full)
+beats, when_beats, beat_step, first_downbeat = ma.process_audio(start_time, data_full)
 
-# print("process takes: ", time.time()-time_process)
+print("process takes: ", time.time()-time_process)
 
-# metronome = Metronome(first_downbeat, beat_step, out_port)
+metronome = Metronome(first_downbeat, beat_step, out_port)
 
-# try:
-#     while 1:
-#         metronome.play()
-#         time.sleep(0.000001)
-# except KeyboardInterrupt:
-#     out_port.send(mt.stop)
-#     sys.exit()
+try:
+    while 1:
+        metronome.play()
+        time.sleep(0.000001)
+except KeyboardInterrupt:
+    out_port.send(mt.stop)
+    exit(1)
 
 
 

@@ -42,23 +42,21 @@ class Metronome:
             self.beat.next()
 
     def update_metronome(self, new_beat_step, new_downbeat):
-
         self.beat = BeatCycle(new_downbeat, new_beat_step)
         while time.time()>self.beat.next_beat:
             self.beat.next()
     
     def play(self):
-        
         if time.time()>self.beat.next_beat:
             print(self.beat )
             self.beat.next()
 
-            # if self.beat.which_beat == 0:
-            #     self.out_port.send(mt.stop)
-            #     self.out_port.send(mt.start)
+            if self.beat.which_beat == 0:
+                self.out_port.send(mt.stop)
+                self.out_port.send(mt.start)
 
 
-        # if self.out_port:
-        #     if time.time()>self.next_clock:
-        #         self.out_port.send(mt.clock)
-        #         self.next_clock = self.next_clock + self.clock_step
+        if self.out_port:
+            if time.time()>self.next_clock:
+                self.out_port.send(mt.clock)
+                self.next_clock = self.next_clock + self.clock_step
