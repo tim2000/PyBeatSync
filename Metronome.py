@@ -41,7 +41,8 @@ class Metronome:
               not (self.beat.which_beat == 0):
             self.beat.next()
 
-    def update_metronome(self, new_beat_step, new_downbeat):
+    def update_metronome(self, new_downbeat, new_beat_step):
+        print("metronome update")
         self.beat = BeatCycle(new_downbeat, new_beat_step)
         while time.time()>self.beat.next_beat:
             self.beat.next()
